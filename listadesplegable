@@ -1,0 +1,262 @@
+//Variables Goblales para Lista Dependiente Cadena Comercial
+var sheets = SpreadsheetApp.openById('1P2bEhbvPVqZdOnuk1DC3gXq6tG562posW3qBjvW910M'); //Conexión con el archivo
+var sheetTiendas = sheets.getSheetByName('TIENDAS'); //Conexión con el libro
+
+function doGet(){
+
+//Toma los datos del archivo
+var data = sheetTiendas.getDataRange().getValues();
+//Array para guardar la cadena comercial
+var cadComercial  = [];
+
+data.forEach(row=>{
+  if(cadComercial.indexOf(row[0]) == -1){
+    //Elmina las cadenas comerciales repetidas
+    cadComercial.push(row[0]);
+  }
+  
+});
+
+var templete = HtmlService.createTemplateFromFile('Formulario');
+templete.cadComercial = cadComercial;
+templete.pubUrl = "https://script.google.com/macros/s/AKfycbxRzDEDUsULKptmTwfTsFXSBMTsoMa15FiTd_D7rKM/dev"
+var output = templete.evaluate();
+
+return output;
+} 
+
+
+//ESTA FUNCIÓN BUSCA EN LAS TIENDAS DE ACUERDO A LA CADENA COMERCIAL
+  function buscarNoAlmacen( cadenaComercialSeleccionada ){
+  var data2 = sheetTiendas.getDataRange().getValues();
+  var listaNoAlmacen = [];
+
+
+  data2.map( row => {
+    if( row[0] == cadenaComercialSeleccionada ){
+      listaNoAlmacen.push(row[1] );
+    }
+  }); 
+
+  return listaNoAlmacen;
+
+  }
+
+//ESTA FUNCIÓN BUSCA Y TOMA LOS DATOS DE LA TIENDA
+
+function getDataTiendas(){
+  const SS = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetInfoTiendas = SS.getSheetByName('TIENDAS');
+  const dataTiendas = sheetInfoTiendas.getDataRange().getDisplayValues();
+
+  dataTiendas.map( row => {
+    if( row[0] == getDataTiendas ){
+      listaNoAlmacen.push(row[1] );
+    }
+  }); 
+  
+  // console.log (dataTiendas)
+
+  return dataTiendas;
+}
+
+
+
+function include( fileName ){
+
+return HtmlService.createHtmlOutputFromFile( fileName )
+.getContent();
+
+}
+
+function doPost ( e ){
+
+  var SS = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetRegistro = SS.getSheetByName('Registro');
+
+  console.log ( e );
+
+var id = new Date();
+var cadenaComercial = e.parameter.cadenaComercial;
+var numeroAlmacen = e.parameter.numeroAlmacen;
+/* var password = e.parameter.password;
+var fechaNacimiento = e.parameter.fechaNacimiento;
+var gradoAcademico = e.parameter.gradoAcademico;
+var acuerdoPrivacidad = ( e.parameter.acuerdoPrivacidad == 'on' ) ? 'Aceptado' : 'Rechazado';
+var nombreCompleto = e.parameter.nombreCompleto;
+var pais = e.parameter.pais;
+var email = e.parameter.email; */
+
+sheetRegistro.appendRow( [ id, cadenaComercial, numeroAlmacen ]);
+
+return HtmlService.createTemplateFromFile ('FormularioTerminado').evaluate();
+
+}
+
+//HTML
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <?!= include('CSS'); ?>
+</head>
+
+<body>
+
+  <!--Titulo de la página -->
+  <div class="container">
+    <h2>Solicitud de trámite offline | COP</h2>
+    </br>
+
+    <h6>
+      Instrucciones:
+      <small class="text-muted">Llena de manera completa y correcta el siguiente formulario para solicitar el trámite. <em>Al terminar y enviar la solcitud, recibiras un correo electronico con el numero de ticket asignado. </em></small>
+    </h6>
+    </br>
+
+    <!--FORMULARIO-->
+    <form id="formulario" name="formulario" class="needs-validation" method="post" action="<?= pubUrl ?>" novalidate>
+
+      <div class="row mb-3">
+
+        <!--Lista Despegable Cadena Comercial-->
+        <div class="col-md-2">
+          <label for="cadenaComercial" class="form-label">Cadena Comercial</label>
+          <select class="form-select" id="cadenaComercial" name="cadenaComercial" onchange="loadInfoDatalist()" required>
+          <!-- <select class="form-select" id="cadenaComercial" name="cadenaComercial" onchange="activaSelectAlmacen()" required> -->
+            <option selected disabled value="">Selecciona...</option>
+              <? cadComercial.forEach(cadenaComercial=>{ ?>
+                <option value="<?= cadenaComercial ?>"><?= cadenaComercial ?></option>  
+              <? }) ?>
+          </select>
+          <div id="validationServer04Feedback" class="invalid-feedback">
+            Selecciona la Cadena Comercial.
+          </div>
+        </div>
+
+        <!--Lista Desplegable de No. de Almacen-->
+        <!--
+        <div class="col-md-2">
+          <label for="numeroAlmacen" class="form-label">No. de Almacén</label>
+          <select class="form-select" id="numeroAlmacen" name="numeroAlmacen" disabled required>
+            </select>
+        </div>
+        -->
+        <div class="col-md-2">
+          <label for="exampleDataList" class="form-label">No. de Almacén</label>
+          <input class="form-control" list="datalistOptions" id="exampleDataList" required>
+          <datalist id="datalistOptions">
+          </datalist>
+        </div>
+
+        <div class="col">
+          <label for="nombreTienda" class="form-label">Nombre de Tienda</label>
+          <input type="text" class="form-control" name="nombreTienda" disabled required>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="gerente" class="form-label">Gerente</label>
+          <input type="text" class="form-control" name="gerente" disabled required>
+        </div>
+        <div class="col-md-2">
+          <label for="zona" class="form-label">Zona</label>
+          <input type="text" class="form-control" name="zona" disabled required>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Enviar</button>
+    </form>
+  </div>
+
+
+  <?!= include('JS'); ?>
+
+  <script>
+    window.addEventListener("load", loadInfoDatalist);
+
+  function loadInfoDatalist(){
+   //console.log('Datalist');
+   google.script.run
+    .withSuccessHandler( cargarDataList )
+    .getDataTiendas()
+
+  } 
+
+  function cargarDataList ( dataTiendas ){
+    //console.log(dataTiendas)
+
+    const inputTiendas = document.getElementById("datalistOptions");
+    dataTiendas.forEach( infoTienda =>{
+      const option = document.createElement("option");
+      option.value = infoTienda[1];
+      option.text = infoTienda [2];
+      inputTiendas.appendChild( option );
+    });
+  }
+
+   /*  window.addEventListener('load', function(){
+    console.log('JavaScript Listo');
+  });
+
+  function activaSelectAlmacen(){
+   google.script.run
+    .withSuccessHandler( actualizarInformacion )
+    .withFailureHandler( muestraError )
+    .buscarNoAlmacen( document.getElementById("cadenaComercial").value );
+  }  */
+ 
+  //Habilita si se necesita la opción de Select
+  /* function actualizarInformacion ( listaNoAlmacen ){
+
+    console.log('No. de Almacén habilitado');
+
+    var select = document.getElementById('numeroAlmacen');
+    select.disabled = false;
+    select.options.length = 0;
+    listaNoAlmacen.forEach ( element =>{
+      var option = document.createElement('option');
+      option.value = element;
+      option.innerHTML = element;
+      select.appendChild(option);
+  });
+  } */
+
+  /* function muestraError( error ){
+    console.log ('error');
+  } */
+  
+  </script>
+
+  <!doctype html>
+  <html lang="en">
+
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+  </head>
+
+  <body>
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous">
+    </script>
+
+  </body>
+
+  </html>
+
+
+</body>
+
+</html>
