@@ -1,3 +1,6 @@
+//CÓDIGO GS
+
+
 //Variables Goblales para Lista Dependiente Cadena Comercial
 var sheets = SpreadsheetApp.openById('1P2bEhbvPVqZdOnuk1DC3gXq6tG562posW3qBjvW910M'); //Conexión con el archivo
 var sheetTiendas = sheets.getSheetByName('TIENDAS'); //Conexión con el libro
